@@ -1,45 +1,40 @@
 import * as React from 'react'
 import { useContext, PropsWithChildren } from 'react'
-import { useMemoOne } from '@react-spring/shared'
 
 /**
  * This context affects all new and existing `SpringValue` objects
  * created with the hook API or the renderprops API.
  */
-export interface SpringContext {
+export interface ISpringContext {
   /** Pause all new and existing animations. */
   pause?: boolean
   /** Force all new and existing animations to be immediate. */
   immediate?: boolean
 }
 
-export const SpringContext = ({
+export const SpringContext = React.createContext<ISpringContext>({
+  pause: false,
+  immediate: false,
+})
+
+export const SpringContextProvider = ({
   children,
   ...props
-}: PropsWithChildren<SpringContext>) => {
-  const inherited = useContext(ctx)
+}: PropsWithChildren<ISpringContext>) => {
+  const inherited = useContext(SpringContext)
 
   // Inherited values are dominant when truthy.
-  const pause = props.pause || !!inherited.pause,
-    immediate = props.immediate || !!inherited.immediate
+  const pause = props.pause ?? inherited.pause ?? false
+  const immediate = props.immediate ?? inherited.immediate ?? false
 
   // Memoize the context to avoid unwanted renders.
-  props = useMemoOne(() => ({ pause, immediate }), [pause, immediate])
-
-  const { Provider } = ctx
-  return <Provider value={props}>{children}</Provider>
-}
-
-const ctx = makeContext(SpringContext, {} as SpringContext)
-
-// Allow `useContext(SpringContext)` in TypeScript.
-SpringContext.Provider = ctx.Provider
-SpringContext.Consumer = ctx.Consumer
-
-/** Make the `target` compatible with `useContext` */
-function makeContext<T>(target: any, init: T): React.Context<T> {
-  Object.assign(target, React.createContext(init))
-  target.Provider._context = target
-  target.Consumer._context = target
-  return target
+  const contextValue = React.useMemo(
+    () => ({ pause, immediate }),
+    [pause, immediate]
+  )
+  return (
+    <SpringContext.Provider value={contextValue}>
+      {children}
+    </SpringContext.Provider>
+  )
 }

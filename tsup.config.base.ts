@@ -91,14 +91,16 @@ if (process.env.NODE_ENV === 'production') {
 interface ConfigOptions {
   name: string
   entry: string
+  buildFilter?: Array<BuildOptions['name']>
 }
 
 export const defaultConfig = (
-  { name: prefix, entry }: ConfigOptions,
+  { name: prefix, entry, buildFilter }: ConfigOptions,
   options: Options
 ): Options[] => {
-  const artifactOptions: Options[] = buildTargets.map(
-    ({ format, minify, env, name, target, dts }) => {
+  const artifactOptions: Options[] = buildTargets
+    .filter(target => !buildFilter || buildFilter.includes(target.name))
+    .map(({ format, minify, env, name, target, dts }) => {
       const outputFilename = `${prefix}.${name}`
 
       const folderSegments = ['dist']
@@ -142,12 +144,15 @@ export const defaultConfig = (
           'react-zdog',
           'zdog',
         ],
-        esbuildOptions(options) {
-          // Needed to prevent auto-replacing of process.env.NODE_ENV in all builds
-          options.platform = 'neutral'
-          // Needed to return to normal lookup behavior when platform: 'neutral'
-          options.mainFields = ['browser', 'module', 'main']
-          options.conditions = ['browser']
+        esbuildOptions(options, context) {
+          // Prevent compiling ES while context is set to CJS
+          if (context.format !== 'cjs') {
+            // Needed to prevent auto-replacing of process.env.NODE_ENV in all builds
+            options.platform = 'neutral'
+            // Needed to return to normal lookup behavior when platform: 'neutral'
+            options.mainFields = ['browser', 'module', 'main']
+            options.conditions = ['browser']
+          }
         },
 
         define: defineValues,
@@ -157,8 +162,7 @@ export const defaultConfig = (
           }
         },
       }
-    }
-  )
+    })
 
   return artifactOptions
 }

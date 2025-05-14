@@ -60,8 +60,8 @@ const App = () => {
     }
   }, [])
 
-  const backgroundTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>()
-  const avatarTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>()
+  const backgroundTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>(undefined)
+  const avatarTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const bindGestures = useGesture(
     {

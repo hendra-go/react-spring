@@ -2,7 +2,7 @@ import * as React from 'react'
 import { render, RenderResult } from '@testing-library/react'
 import { is } from '@react-spring/shared'
 import { Lookup } from '@react-spring/types'
-import { SpringContext } from '../SpringContext'
+import { SpringContextProvider, type ISpringContext } from '../SpringContext'
 import { SpringValue } from '../SpringValue'
 import { SpringRef } from '../SpringRef'
 import { useSpring } from './useSpring'
@@ -110,12 +110,12 @@ describe('useSpring', () => {
   })
 })
 
-interface TestContext extends SpringContext {
-  set(values: SpringContext): void
+interface TestContext extends ISpringContext {
+  set(values: ISpringContext): void
 }
 
 function createUpdater(Component: React.ComponentType<{ args: [any, any?] }>) {
-  let prevElem: JSX.Element | undefined
+  let prevElem: React.JSX.Element | undefined
   let result: RenderResult | undefined
 
   const context: TestContext = {
@@ -139,8 +139,10 @@ function createUpdater(Component: React.ComponentType<{ args: [any, any?] }>) {
     }
   })
 
-  function renderWithContext(elem: JSX.Element) {
-    const wrapped = <SpringContext {...context}>{elem}</SpringContext>
+  function renderWithContext(elem: React.JSX.Element) {
+    const wrapped = (
+      <SpringContextProvider {...context}>{elem}</SpringContextProvider>
+    )
     if (result) result.rerender(wrapped)
     else result = render(wrapped)
     return result

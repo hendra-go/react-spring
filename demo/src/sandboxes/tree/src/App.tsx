@@ -5,7 +5,7 @@ import { Container, Title, Frame, Content, toggle } from './styles'
 import * as Icons from './icons'
 
 function usePrevious<T>(value: T) {
-  const ref = React.useRef<T>()
+  const ref = React.useRef<T>(undefined)
   React.useEffect(() => void (ref.current = value), [value])
   return ref.current
 }
@@ -13,7 +13,7 @@ function usePrevious<T>(value: T) {
 const Tree = React.memo<
   React.HTMLAttributes<HTMLDivElement> & {
     defaultOpen?: boolean
-    name: string | JSX.Element
+    name: string | React.JSX.Element
   }
 >(({ children, name, style, defaultOpen = false }) => {
   const [isOpen, setOpen] = React.useState(defaultOpen)

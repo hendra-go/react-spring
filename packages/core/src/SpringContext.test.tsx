@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { render, RenderResult } from '@testing-library/react'
-import { SpringContext } from './SpringContext'
+import { type ISpringContext, SpringContextProvider } from './SpringContext'
 import { SpringValue } from './SpringValue'
 import { useSpring } from './hooks'
 
@@ -13,13 +13,13 @@ describe('SpringContext', () => {
   }
 
   const update = createUpdater(props => (
-    <SpringContext {...props}>
+    <SpringContextProvider {...props}>
       <Child />
-    </SpringContext>
+    </SpringContextProvider>
   ))
 
   it('only merges when changed', () => {
-    const context: SpringContext = {}
+    const context: ISpringContext = {}
     const onProps = jest.fn()
     const Test = () => {
       useSpring({ onProps, x: 0 })
@@ -27,9 +27,9 @@ describe('SpringContext', () => {
     }
 
     const getRoot = () => (
-      <SpringContext {...context}>
+      <SpringContextProvider {...context}>
         <Test />
-      </SpringContext>
+      </SpringContextProvider>
     )
 
     const expectUpdates = (updates: any[]) => {
@@ -114,12 +114,12 @@ describe('SpringContext', () => {
   })
 })
 
-function createUpdater(Component: React.ComponentType<SpringContext>) {
+function createUpdater(Component: React.ComponentType<ISpringContext>) {
   let result: RenderResult | undefined
   afterEach(() => {
     result = undefined
   })
-  return (props: SpringContext) => {
+  return (props: ISpringContext) => {
     const elem = <Component {...props} />
     if (result) result.rerender(elem)
     else result = render(elem)
